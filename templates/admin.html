@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<h1 class="text-center text-danger">Admin Panel</h1>
+
+<form method="POST" class="mt-4">
+    <div class="mb-3">
+        <label for="departure_city" class="form-label">Departure City:</label>
+        <input type="text" id="departure_city" name="departure_city" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="arrival_city" class="form-label">Arrival City:</label>
+        <input type="text" id="arrival_city" name="arrival_city" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="date" class="form-label">Date:</label>
+        <input type="date" id="date" name="date" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="price" class="form-label">Price:</label>
+        <input type="number" id="price" name="price" class="form-control" step="0.01">
+    </div>
+    <div class="mb-3">
+        <label for="available_seats" class="form-label">Available Seats:</label>
+        <input type="number" id="available_seats" name="available_seats" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Add Flight</button>
+</form>
+
+<h2 class="mt-5">Existing Flights</h2>
+<table class="table table-striped table-hover mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Date</th>
+            <th>Price</th>
+            <th>Seats</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for flight in flights %}
+        <tr>
+            <td>{{ flight.id }}</td>
+            <td>{{ flight.departure_city }}</td>
+            <td>{{ flight.arrival_city }}</td>
+            <td>{{ flight.date }}</td>
+            <td>{{ flight.price }}</td>
+            <td>{{ flight.available_seats }}</td>
+            <td>
+                <a href="/edit_flight/{{ flight.id }}" class="btn btn-warning btn-sm">Edit</a>
+                <form method="POST" action="/delete_flight/{{ flight.id }}" style="display:inline-block;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

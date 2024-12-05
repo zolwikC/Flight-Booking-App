@@ -30,6 +30,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)  # Domyślnie użytkownicy nie są administratorami
 
     # Flask-Login properties
     @property
@@ -93,12 +94,29 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         email = request.form["email"]
-        password = bcrypt.generate_password_hash(request.form["password"]).decode('utf-8')
-        user = User(username=username, email=email, password=password)
-        db.session.add(user)
+        password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
+
+        # Sprawdzenie, czy hasła się zgadzają
+        if password != confirm_password:
+            return "Passwords do not match!"
+
+        # Sprawdzenie, czy użytkownik już istnieje
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return "Email already registered!"
+
+        # Hashowanie hasła
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+
+        # Tworzenie nowego użytkownika
+        new_user = User(username=username, email=email, password=hashed_password)
+        db.session.add(new_user)
         db.session.commit()
+
         return redirect(url_for("login"))
     return render_template("register.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -113,6 +131,51 @@ def login():
             return "Invalid email or password"
     return render_template("login.html")
 
+@app.route("/admin", methods=["GET", "POST"])
+@login_required
+def admin():
+    if not current_user.is_admin:
+        return "Access Denied! Only admins can access this page."
+
+    if request.method == "POST":
+        # Dodanie nowego lotu
+        departure_city = request.form["departure_city"]
+        arrival_city = request.form["arrival_city"]
+        date = request.form["date"]
+        price = float(request.form["price"])
+        available_seats = int(request.form["available_seats"])
+
+        new_flight = Flight(
+            departure_city=departure_city,
+            arrival_city=arrival_city,
+            date=date,
+            price=price,
+            available_seats=available_seats
+        )
+        db.session.add(new_flight)
+        db.session.commit()
+        return redirect(url_for("admin"))
+
+    flights = Flight.query.all()
+    return render_template("admin.html", flights=flights)
+
+@app.route("/admin/users", methods=["GET", "POST"])
+@login_required
+def manage_users():
+    if not current_user.is_admin:
+        return "Access Denied! Only admins can access this page."
+
+    if request.method == "POST":
+        user_id = int(request.form["user_id"])
+        is_admin = request.form.get("is_admin") == "on"
+
+        user = User.query.get(user_id)
+        if user:
+            user.is_admin = is_admin
+            db.session.commit()
+
+    users = User.query.all()
+    return render_template("manage_users.html", users=users)
 
 
 @app.route("/logout")
@@ -120,8 +183,6 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("index"))
-
-
 
 @app.route("/book/<int:flight_id>", methods=["GET", "POST"])
 @login_required
@@ -145,6 +206,40 @@ def book_flight(flight_id):
         return redirect(url_for("my_bookings"))
     return render_template("book.html", flight=flight)
 
+@app.route("/edit_flight/<int:flight_id>", methods=["GET", "POST"])
+@login_required
+def edit_flight(flight_id):
+    if not current_user.is_admin:
+        return "Access Denied! Only admins can edit flights."
+
+    flight = Flight.query.get_or_404(flight_id)  # Pobierz lot lub zwróć błąd 404
+
+    if request.method == "POST":
+        # Zaktualizuj dane lotu
+        flight.departure_city = request.form["departure_city"]
+        flight.arrival_city = request.form["arrival_city"]
+        flight.date = request.form["date"]
+        try:
+            flight.price = float(request.form["price"])
+            flight.available_seats = int(request.form["available_seats"])
+        except ValueError:
+            return "Invalid input! Price and seats must be valid numbers."
+
+        db.session.commit()  # Zapisz zmiany w bazie danych
+        return redirect(url_for("admin"))  # Przekieruj do panelu admina
+
+    return render_template("edit_flight.html", flight=flight)  # Przekaż dane lotu do formularza
+
+@app.route("/delete_flight/<int:flight_id>", methods=["POST"])
+@login_required
+def delete_flight(flight_id):
+    if not current_user.is_admin:
+        return "Access Denied! Only admins can delete flights."
+
+    flight = Flight.query.get_or_404(flight_id)  # Pobierz lot lub zwróć błąd 404
+    db.session.delete(flight)  # Usuń lot z bazy danych
+    db.session.commit()  # Zapisz zmiany
+    return redirect(url_for("admin"))  # Przekieruj do panelu admina
 
 @app.route("/my_bookings")
 @login_required

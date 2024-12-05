@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Booking</title>
+    <title>Flight Booking System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body>
     <div class="container mt-5">
-        <h1 class="text-center text-primary">Flight Booking System</h1>
+        <h1 class="text-center text-primary">Available Flights</h1>
         <table class="table table-striped mt-4">
             <thead>
                 <tr>
@@ -29,7 +29,7 @@
                     <td>{{ flight.price }} PLN</td>
                     <td>{{ flight.available_seats }}</td>
                     <td>
-                        <a href="/flight/{{ flight.id }}" class="btn btn-primary btn-sm">View</a>
+                        <a href="/book/{{ flight.id }}" class="btn btn-primary btn-sm">Book</a>
                     </td>
                 </tr>
                 {% endfor %}

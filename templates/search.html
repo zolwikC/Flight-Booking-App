@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Search Flights{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center text-primary mb-4">Search Flights</h1>
+    <form method="POST" class="shadow p-4 rounded bg-white">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="departure_city" class="form-label">Departure City</label>
+                <input type="text" id="departure_city" name="departure_city" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="arrival_city" class="form-label">Arrival City</label>
+                <input type="text" id="arrival_city" name="arrival_city" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" id="date" name="date" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="min_price" class="form-label">Min Price</label>
+                <input type="number" id="min_price" name="min_price" class="form-control" step="0.01">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="max_price" class="form-label">Max Price</label>
+                <input type="number" id="max_price" name="max_price" class="form-control" step="0.01">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Search</button>
+    </form>
+</div>
+{% endblock %}

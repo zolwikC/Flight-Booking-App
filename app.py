@@ -206,6 +206,33 @@ def book_flight(flight_id):
         return redirect(url_for("my_bookings"))
     return render_template("book.html", flight=flight)
 
+@app.route("/search", methods=["GET", "POST"])
+def search_flights():
+    if request.method == "POST":
+        departure_city = request.form.get("departure_city")
+        arrival_city = request.form.get("arrival_city")
+        date = request.form.get("date")
+        min_price = request.form.get("min_price")
+        max_price = request.form.get("max_price")
+
+        # Filtruj loty
+        flights = Flight.query
+        if departure_city:
+            flights = flights.filter(Flight.departure_city.ilike(f"%{departure_city}%"))
+        if arrival_city:
+            flights = flights.filter(Flight.arrival_city.ilike(f"%{arrival_city}%"))
+        if date:
+            flights = flights.filter(Flight.date == date)
+        if min_price:
+            flights = flights.filter(Flight.price >= float(min_price))
+        if max_price:
+            flights = flights.filter(Flight.price <= float(max_price))
+        
+        flights = flights.all()
+        return render_template("search_results.html", flights=flights)
+
+    return render_template("search.html")
+
 @app.route("/edit_flight/<int:flight_id>", methods=["GET", "POST"])
 @login_required
 def edit_flight(flight_id):

@@ -15,9 +15,11 @@
             <p>Price: {{ flight.price }} PLN</p>
             <p>Available Seats: {{ flight.available_seats }}</p>
             <form method="POST">
-                <label for="passengers" class="form-label">Number of Passengers:</label>
-                <input type="number" id="passengers" name="passengers" class="form-control" required>
-                <button type="submit" class="btn btn-success mt-3">Confirm Booking</button>
+                <div class="mb-3">
+                    <label for="passengers" class="form-label">Number of Passengers:</label>
+                    <input type="number" id="passengers" name="passengers" class="form-control" min="1" max="{{ flight.available_seats }}" required>
+                </div>
+                <button type="submit" class="btn btn-success">Confirm Booking</button>
             </form>
             <a href="/" class="btn btn-secondary mt-3">Cancel</a>
         </div>

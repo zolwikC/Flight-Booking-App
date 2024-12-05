@@ -47,6 +47,18 @@ class Booking(db.Model):
     number_of_passengers = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(100), default="Pending")
 
+@app.route("/add_sample_flights_sql")
+def add_sample_flights_sql():
+    db.session.execute("""
+        INSERT INTO flight (departure_city, arrival_city, date, price, available_seats)
+        VALUES ('Warsaw', 'Berlin', '2024-12-10', 100.0, 50),
+               ('Paris', 'London', '2024-12-11', 120.0, 40),
+               ('New York', 'Los Angeles', '2024-12-12', 300.0, 60)
+    """)
+    db.session.commit()
+    return "Sample flights added using raw SQL!"
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -80,6 +92,7 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    error = None
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -88,8 +101,9 @@ def login():
             login_user(user)
             return redirect(url_for("index"))
         else:
-            return "Invalid email or password."
-    return render_template("login.html")
+            error = "Invalid email or password."
+    return render_template("login.html", error=error)
+
 
 @app.route("/logout")
 @login_required
@@ -102,19 +116,20 @@ def logout():
 def book_flight(flight_id):
     flight = Flight.query.get_or_404(flight_id)
     if request.method == "POST":
+        # Pobierz liczbę miejsc od użytkownika
         number_of_passengers = int(request.form["passengers"])
+
+        # Sprawdź, czy jest wystarczająca liczba dostępnych miejsc
         if number_of_passengers > flight.available_seats:
-            return "Not enough seats available."
-        booking = Booking(
-            user_id=current_user.id,
-            flight_id=flight.id,
-            number_of_passengers=number_of_passengers
-        )
+            return "Not enough seats available. Please choose fewer seats."
+
+        # Zaktualizuj liczbę dostępnych miejsc
         flight.available_seats -= number_of_passengers
-        db.session.add(booking)
         db.session.commit()
+
         return redirect(url_for("index"))
     return render_template("book.html", flight=flight)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -87,7 +87,16 @@ def login():
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for("index"))
+        else:
+            return "Invalid email or password."
     return render_template("login.html")
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("index"))
+
 
 @app.route("/book/<int:flight_id>", methods=["GET", "POST"])
 def book_flight(flight_id):
@@ -106,12 +115,6 @@ def book_flight(flight_id):
         db.session.commit()
         return redirect(url_for("index"))
     return render_template("book.html", flight=flight)
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     app.run(debug=True)

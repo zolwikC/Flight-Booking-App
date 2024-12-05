@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt # type: ignore
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user # type: ignore
+from flask_login import LoginManager, login_user, logout_user, UserMixin,login_required, current_user # type: ignore
 import os
 
 # Tworzenie aplikacji Flask
@@ -25,11 +25,17 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
 # Modele bazy danych
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+
+    # Flask-Login properties
+    @property
+    def is_active(self):
+        """All users are active by default."""
+        return True
 
 class Flight(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,7 +51,11 @@ class Booking(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.id'), nullable=False)
     number_of_passengers = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.String(100), default="Pending")
+    status = db.Column(db.String(100), default="Confirmed")
+
+    # Relacja z tabelą Flight
+    flight = db.relationship('Flight', backref='bookings', lazy=True)
+
 
 @app.route("/add_sample_flights_sql")
 def add_sample_flights_sql():
@@ -92,7 +102,6 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    error = None
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -101,8 +110,9 @@ def login():
             login_user(user)
             return redirect(url_for("index"))
         else:
-            error = "Invalid email or password."
-    return render_template("login.html", error=error)
+            return "Invalid email or password"
+    return render_template("login.html")
+
 
 
 @app.route("/logout")
@@ -112,24 +122,35 @@ def logout():
     return redirect(url_for("index"))
 
 
+
 @app.route("/book/<int:flight_id>", methods=["GET", "POST"])
+@login_required
 def book_flight(flight_id):
     flight = Flight.query.get_or_404(flight_id)
     if request.method == "POST":
-        # Pobierz liczbę miejsc od użytkownika
         number_of_passengers = int(request.form["passengers"])
-
-        # Sprawdź, czy jest wystarczająca liczba dostępnych miejsc
         if number_of_passengers > flight.available_seats:
             return "Not enough seats available. Please choose fewer seats."
 
-        # Zaktualizuj liczbę dostępnych miejsc
+        # Dodanie rezerwacji
+        booking = Booking(
+            user_id=current_user.id,
+            flight_id=flight.id,
+            number_of_passengers=number_of_passengers
+        )
         flight.available_seats -= number_of_passengers
+        db.session.add(booking)
         db.session.commit()
 
-        return redirect(url_for("index"))
+        return redirect(url_for("my_bookings"))
     return render_template("book.html", flight=flight)
 
+
+@app.route("/my_bookings")
+@login_required
+def my_bookings():
+    bookings = Booking.query.filter_by(user_id=current_user.id).all()
+    return render_template("my_bookings.html", bookings=bookings)
 
 if __name__ == "__main__":
     app.run(debug=True)

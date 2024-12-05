@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center text-primary">My Bookings</h1>
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Date</th>
+                    <th>Price</th>
+                    <th>Passengers</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.flight.departure_city }}</td>
+                    <td>{{ booking.flight.arrival_city }}</td>
+                    <td>{{ booking.flight.date }}</td>
+                    <td>{{ booking.flight.price }}</td>
+                    <td>{{ booking.number_of_passengers }}</td>
+                    <td>{{ booking.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/" class="btn btn-secondary mt-3">Back to Home</a>
+    </div>
+</body>
+</html>

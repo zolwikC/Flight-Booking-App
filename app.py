@@ -53,9 +53,13 @@ class Booking(db.Model):
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.id'), nullable=False)
     number_of_passengers = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(100), default="Confirmed")
+    is_paid = db.Column(db.Boolean, default=False)
 
     # Relacja z tabelą Flight
     flight = db.relationship('Flight', backref='bookings', lazy=True)
+
+
+
 
 
 @app.route("/add_sample_flights_sql")
@@ -206,6 +210,44 @@ def book_flight(flight_id):
         return redirect(url_for("my_bookings"))
     return render_template("book.html", flight=flight)
 
+@app.route("/pay_booking/<int:booking_id>", methods=["POST"])
+@login_required
+def pay_booking(booking_id):
+    """
+    Trasa oznaczająca rezerwację jako opłaconą.
+    """
+    # Pobieranie rezerwacji na podstawie ID
+    booking = Booking.query.get_or_404(booking_id)
+
+    # Sprawdzenie, czy rezerwacja należy do aktualnie zalogowanego użytkownika
+    if booking.user_id != current_user.id:
+        return "Access Denied!"
+
+    # Oznaczenie rezerwacji jako opłaconej
+    booking.status = "Paid"
+    db.session.commit()
+    return redirect(url_for("my_bookings"))
+
+@app.route("/cancel_booking/<int:booking_id>", methods=["POST"])
+@login_required
+def cancel_booking(booking_id):
+    """
+    Trasa anulująca rezerwację.
+    """
+    # Pobieranie rezerwacji na podstawie ID
+    booking = Booking.query.get_or_404(booking_id)
+
+    # Sprawdzenie, czy rezerwacja należy do aktualnie zalogowanego użytkownika
+    if booking.user_id != current_user.id:
+        return "Access Denied!"
+
+    # Anulowanie rezerwacji
+    if booking.status != "Cancelled":
+        booking.status = "Cancelled"
+        booking.flight.available_seats += booking.number_of_passengers
+        db.session.commit()
+
+    return redirect(url_for("my_bookings"))
 @app.route("/search", methods=["GET", "POST"])
 def search_flights():
     if request.method == "POST":
@@ -267,6 +309,33 @@ def delete_flight(flight_id):
     db.session.delete(flight)  # Usuń lot z bazy danych
     db.session.commit()  # Zapisz zmiany
     return redirect(url_for("admin"))  # Przekieruj do panelu admina
+
+@app.route("/admin/reports")
+@login_required
+def admin_reports():
+    if not current_user.is_admin:
+        return "Access Denied! Only admins can access this page."
+
+    # Statystyki
+    total_users = User.query.count()
+    total_bookings = Booking.query.count()
+
+    # Liczba rezerwacji dla każdego lotu
+    flight_stats = db.session.query(
+        Flight.id,
+        Flight.departure_city,
+        Flight.arrival_city,
+        Flight.date,
+        db.func.count(Booking.id).label("booking_count")
+    ).join(Booking, Booking.flight_id == Flight.id, isouter=True) \
+     .group_by(Flight.id) \
+     .all()
+
+    return render_template("admin_reports.html", 
+                           total_users=total_users, 
+                           total_bookings=total_bookings, 
+                           flight_stats=flight_stats)
+
 
 @app.route("/my_bookings")
 @login_required

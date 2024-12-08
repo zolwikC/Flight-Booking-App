@@ -1,56 +1,63 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="text-center text-primary">Admin Panel</h1>
-<h3 class="mt-4">Add New Flight</h3>
-<form method="POST" class="mb-4">
-    <div class="row">
-        <div class="col-md-3">
-            <input type="text" class="form-control" name="departure_city" placeholder="Departure City" required>
-        </div>
-        <div class="col-md-3">
-            <input type="text" class="form-control" name="arrival_city" placeholder="Arrival City" required>
-        </div>
-        <div class="col-md-2">
-            <input type="date" class="form-control" name="date" required>
-        </div>
-        <div class="col-md-2">
-            <input type="number" class="form-control" name="price" placeholder="Price" required>
-        </div>
-        <div class="col-md-2">
-            <input type="number" class="form-control" name="available_seats" placeholder="Seats" required>
-        </div>
-    </div>
-    <button type="submit" class="btn btn-success mt-3">Add Flight</button>
-</form>
+<h1 class="text-center text-danger">Admin Panel</h1>
 
-<h3>Manage Flights</h3>
-<table class="table table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Departure</th>
-            <th>Arrival</th>
-            <th>Date</th>
-            <th>Price</th>
-            <th>Seats</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for flight in flights %}
-        <tr>
-            <td>{{ flight.departure_city }}</td>
-            <td>{{ flight.arrival_city }}</td>
-            <td>{{ flight.date }}</td>
-            <td>{{ flight.price }}</td>
-            <td>{{ flight.available_seats }}</td>
-            <td>
-                <a href="{{ url_for('edit_flight', flight_id=flight.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form action="{{ url_for('delete_flight', flight_id=flight.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!-- Add Flight Form -->
+<div class="card mt-4 p-4">
+    <h3>Add New Flight</h3>
+    <form method="POST">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="departure_city" placeholder="Departure City" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="arrival_city" placeholder="Arrival City" required>
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" name="date" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="price" placeholder="Price" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="available_seats" placeholder="Seats" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Add Flight</button>
+    </form>
+</div>
+
+<!-- Flights Table -->
+<div class="card mt-4 p-4">
+    <h3>Manage Flights</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Date</th>
+                <th>Price</th>
+                <th>Seats</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for flight in flights %}
+            <tr>
+                <td>{{ flight.departure_city }}</td>
+                <td>{{ flight.arrival_city }}</td>
+                <td>{{ flight.date }}</td>
+                <td>{{ flight.price }}</td>
+                <td>{{ flight.available_seats }}</td>
+                <td>
+                    <a href="{{ url_for('edit_flight', flight_id=flight.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    <form action="{{ url_for('delete_flight', flight_id=flight.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

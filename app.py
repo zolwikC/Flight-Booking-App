@@ -59,9 +59,6 @@ class Booking(db.Model):
     flight = db.relationship('Flight', backref='bookings', lazy=True)
 
 
-
-
-
 @app.route("/add_sample_flights_sql")
 def add_sample_flights_sql():
     db.session.execute("""

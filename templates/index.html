@@ -1,32 +1,31 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h1 class="text-center mb-4 text-primary">Available Flights</h1>
-<div class="card p-4">
-    <table class="table table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Departure</th>
-                <th>Arrival</th>
-                <th>Date</th>
-                <th>Price</th>
-                <th>Seats</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for flight in flights %}
-            <tr>
-                <td>{{ flight.departure_city }}</td>
-                <td>{{ flight.arrival_city }}</td>
-                <td>{{ flight.date }}</td>
-                <td>{{ flight.price }}</td>
-                <td>{{ flight.available_seats }}</td>
-                <td>
-                    <a href="{{ url_for('book_flight', flight_id=flight.id) }}" class="btn btn-outline-primary btn-sm">Book</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<h1 class="text-center">Available Flights</h1>
+<table class="table table-striped table-hover table-bordered mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Date</th>
+            <th>Price</th>
+            <th>Seats</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for flight in flights %}
+        <tr>
+            <td>{{ flight.departure_city }}</td>
+            <td>{{ flight.arrival_city }}</td>
+            <td>{{ flight.date }}</td>
+            <td>{{ flight.price }}</td>
+            <td>{{ flight.available_seats }}</td>
+            <td>
+                <a href="{{ url_for('book_flight', flight_id=flight.id) }}" class="btn btn-success btn-sm">Book</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

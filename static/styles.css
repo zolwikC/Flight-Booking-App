@@ -1,0 +1,16 @@
+/* Sidebar styles */
+.sidebar {
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding-top: 20px;
+    background-color: #343a40;
+    overflow-y: auto;
+}
+
+/* Main content should shift right */
+.container-fluid {
+    margin-left: 260px; /* Width of the sidebar + padding */
+}

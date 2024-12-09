@@ -11,6 +11,11 @@
             background-color: #e3f2fd; /* Jasnoniebieskie tło */
             margin: 0;
             display: flex;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark-mode {
+            background-color: #121212; /* Ciemne tło */
+            color: #e0e0e0; /* Jasny tekst */
         }
         .sidebar {
             background: linear-gradient(45deg, #ffeb3b, #ff4081); /* Gradient tęczowy */
@@ -71,11 +76,49 @@
         table tr:hover {
             background-color: #d1c4e9; /* Efekt hover */
         }
+        .dark-mode .sidebar {
+            background: linear-gradient(45deg, #37474f, #607d8b); /* Ciemniejszy gradient */
+        }
+        .dark-mode .sidebar a {
+            color: #b0bec5; /* Jasnoszary tekst */
+        }
+        .dark-mode .sidebar a:hover {
+            color: #ffab40; /* Pomarańczowy hover */
+        }
+        .dark-mode table th {
+            background-color: #455a64; /* Ciemniejszy nagłówek tabeli */
+        }
+        .dark-mode table tr:nth-child(even) {
+            background-color: #546e7a; /* Ciemny szary */
+        }
+        .dark-mode table tr:nth-child(odd) {
+            background-color: #37474f; /* Jeszcze ciemniejszy */
+        }
     </style>
+    <script>
+        // Funkcja przełączająca tryb jasny/ciemny
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            localStorage.setItem('dark-mode', isDarkMode); // Zapisanie wyboru użytkownika
+        }
+
+        // Sprawdzenie i zastosowanie trybu z localStorage
+        window.onload = function () {
+            if (localStorage.getItem('dark-mode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+        };
+    </script>
 </head>
 <body>
     <div class="sidebar">
         <h2>Menu</h2>
+        <!-- Dodanie przycisku do przełączania trybu ciemnego/jasnego -->
+        <button onclick="toggleDarkMode()" class="btn btn-secondary mb-3">
+            🌙 Toggle Dark Mode
+        </button>
         <ul class="nav flex-column">
             <li class="nav-item mb-3">
                 <a class="nav-link" href="{{ url_for('index') }}">🏠 Home</a>

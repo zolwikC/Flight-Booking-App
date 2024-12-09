@@ -319,7 +319,6 @@ def admin_reports():
 
     # Liczba rezerwacji dla każdego lotu
     flight_stats = db.session.query(
-        Flight.id,
         Flight.departure_city,
         Flight.arrival_city,
         Flight.date,
@@ -328,10 +327,20 @@ def admin_reports():
      .group_by(Flight.id) \
      .all()
 
-    return render_template("admin_reports.html", 
-                           total_users=total_users, 
-                           total_bookings=total_bookings, 
-                           flight_stats=flight_stats)
+    # Przygotowanie danych do wykresu
+    labels = [f"{stat.departure_city} → {stat.arrival_city}" for stat in flight_stats]
+    data = [stat.booking_count for stat in flight_stats]
+
+    # Render szablonu
+    return render_template(
+        "admin_reports.html",
+        total_users=total_users,
+        total_bookings=total_bookings,
+        flight_stats=flight_stats,
+        labels=labels,
+        data=data
+    )
+
 
 
 @app.route("/my_bookings")

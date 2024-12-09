@@ -47,6 +47,7 @@ class Flight(db.Model):
     available_seats = db.Column(db.Integer, nullable=False)
 
 
+
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -139,26 +140,35 @@ def admin():
         return "Access Denied! Only admins can access this page."
 
     if request.method == "POST":
-        # Dodanie nowego lotu
-        departure_city = request.form["departure_city"]
-        arrival_city = request.form["arrival_city"]
-        date = request.form["date"]
-        price = float(request.form["price"])
-        available_seats = int(request.form["available_seats"])
+        try:
+            # Pobieranie danych z formularza
+            departure_city = request.form.get("departure_city")
+            arrival_city = request.form.get("arrival_city")
+            date = request.form.get("date")
+            price = float(request.form.get("price", 0))  # Domyślnie 0, jeśli brak wartości
+            available_seats = int(request.form.get("available_seats", 0))  # Domyślnie 0
 
-        new_flight = Flight(
-            departure_city=departure_city,
-            arrival_city=arrival_city,
-            date=date,
-            price=price,
-            available_seats=available_seats
-        )
-        db.session.add(new_flight)
-        db.session.commit()
-        return redirect(url_for("admin"))
+            # Walidacja danych
+            if not departure_city or not arrival_city or not date or price <= 0 or available_seats <= 0:
+                return "All fields are required and must be valid!"
+
+            # Tworzenie nowego lotu
+            new_flight = Flight(
+                departure_city=departure_city,
+                arrival_city=arrival_city,
+                date=date,
+                price=price,
+                available_seats=available_seats
+            )
+            db.session.add(new_flight)
+            db.session.commit()
+            return redirect(url_for("admin"))
+        except Exception as e:
+            return f"An error occurred: {str(e)}"
 
     flights = Flight.query.all()
     return render_template("admin.html", flights=flights)
+
 
 @app.route("/admin/users", methods=["GET", "POST"])
 @login_required

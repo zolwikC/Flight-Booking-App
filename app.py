@@ -86,10 +86,35 @@ else:
     print("Baza danych już istnieje.")
 
 # Trasy aplikacji
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    flights = Flight.query.all()
+    if request.method == "POST":
+        # Pobranie danych z formularza
+        departure_city = request.form.get("departure_city")
+        arrival_city = request.form.get("arrival_city")
+        date = request.form.get("date")
+        min_price = request.form.get("min_price")
+        max_price = request.form.get("max_price")
+
+        # Filtrowanie lotów
+        flights = Flight.query
+        if departure_city:
+            flights = flights.filter(Flight.departure_city.ilike(f"%{departure_city}%"))
+        if arrival_city:
+            flights = flights.filter(Flight.arrival_city.ilike(f"%{arrival_city}%"))
+        if date:
+            flights = flights.filter(Flight.date == date)
+        if min_price:
+            flights = flights.filter(Flight.price >= float(min_price))
+        if max_price:
+            flights = flights.filter(Flight.price <= float(max_price))
+        flights = flights.all()
+    else:
+        # Wyświetlanie wszystkich lotów domyślnie
+        flights = Flight.query.all()
+
     return render_template("index.html", flights=flights)
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():

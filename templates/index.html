@@ -25,14 +25,15 @@
     <div class="text-center mt-3">
         <button type="submit" class="btn btn-primary">Search</button>
     </div>
-    <div id="map"></div>
+</form>
 
+<!-- Mapa -->
+<div id="map" style="height: 500px; width: 100%; margin-bottom: 20px;"></div>
 
 <!-- Tabela z wynikami wyszukiwania -->
 <h2 class="text-center mt-4">Available Flights</h2>
 <table class="table table-striped">
     <thead>
-        
         <tr>
             <th>Departure</th>
             <th>Arrival</th>
@@ -44,7 +45,10 @@
     </thead>
     <tbody>
         {% for flight in flights %}
-        <tr>
+        <tr 
+            class="flight-row" 
+            data-departure="{{ flight.departure_city }}" 
+            data-arrival="{{ flight.arrival_city }}">
             <td>{{ flight.departure_city }}</td>
             <td>{{ flight.arrival_city }}</td>
             <td>{{ flight.date }}</td>

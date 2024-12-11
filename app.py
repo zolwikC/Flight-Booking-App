@@ -55,6 +55,8 @@ class Booking(db.Model):
     number_of_passengers = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(100), default="Confirmed")
     is_paid = db.Column(db.Boolean, default=False)
+    email = db.Column(db.String(150), nullable=True)  # Nowa kolumna
+    phone = db.Column(db.String(15), nullable=True)   # Nowa kolumna
 
     # Relacja z tabelą Flight
     flight = db.relationship('Flight', backref='bookings', lazy=True)
@@ -226,6 +228,9 @@ def book_flight(flight_id):
     flight = Flight.query.get_or_404(flight_id)
     if request.method == "POST":
         number_of_passengers = int(request.form["passengers"])
+        email = request.form["email"]  # Pobieranie emaila
+        phone = request.form["phone"]  # Pobieranie numeru telefonu
+
         if number_of_passengers > flight.available_seats:
             return "Not enough seats available. Please choose fewer seats."
 
@@ -233,7 +238,9 @@ def book_flight(flight_id):
         booking = Booking(
             user_id=current_user.id,
             flight_id=flight.id,
-            number_of_passengers=number_of_passengers
+            number_of_passengers=number_of_passengers,
+            email=email,
+            phone=phone
         )
         flight.available_seats -= number_of_passengers
         db.session.add(booking)
@@ -241,6 +248,7 @@ def book_flight(flight_id):
 
         return redirect(url_for("my_bookings"))
     return render_template("book.html", flight=flight)
+
 
 @app.route("/pay_booking/<int:booking_id>", methods=["POST"])
 @login_required

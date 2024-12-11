@@ -23,18 +23,20 @@
                         {% endif %}
                     </p>
                     {% if flight.available_seats > 0 %}
-                    <form method="POST">
-                        <div class="input-group mb-3">
-                            <span class="input-group-text bg-gradient-primary text-white">
-                                <i class="fas fa-users"></i>
-                            </span>
-                            <input type="number" name="passengers" class="form-control" placeholder="Number of Passengers" min="1" max="{{ flight.available_seats }}" required>
+                    <form method="POST" action="{{ url_for('book_flight', flight_id=flight.id) }}">
+                        <div class="mb-3">
+                            <label for="passengers" class="form-label">Number of Passengers</label>
+                            <input type="number" class="form-control" id="passengers" name="passengers" required>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-gradient-success btn-lg shadow">
-                                <i class="fas fa-check-circle me-2"></i> Confirm Booking
-                            </button>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Confirm Booking</button>
                     </form>
                     {% else %}
                         <p class="text-danger fw-bold">This flight is fully booked.</p>

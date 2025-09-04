@@ -162,6 +162,18 @@
                 <li class="nav-item mb-3">
                     <a class="nav-link" href="{{ url_for('my_bookings') }}">✈️ My Bookings</a>
                 </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="{{ url_for('favorites') }}">⭐ Favorites</a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="{{ url_for('profile') }}">👤 Profile</a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="{{ url_for('change_password') }}">🔒 Change Password</a>
+                </li>
+                <li class="nav-item mb-3">
+                    <a class="nav-link" href="{{ url_for('download_bookings') }}">📥 Download Bookings</a>
+                </li>
                 {% if current_user.is_admin %}
                     <li class="nav-item mb-3">
                         <a class="nav-link" href="{{ url_for('admin') }}">🛠 Admin Panel</a>

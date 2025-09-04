@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-center">My Favorite Flights</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Date</th>
+            <th>Price</th>
+            <th>Seats</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for flight in flights %}
+        <tr>
+            <td>{{ flight.departure_city }}</td>
+            <td>{{ flight.arrival_city }}</td>
+            <td>{{ flight.date }}</td>
+            <td>{{ flight.price }}</td>
+            <td>{{ flight.available_seats }}</td>
+            <td>
+                <form method="post" action="{{ url_for('toggle_favorite', flight_id=flight.id) }}">
+                    <button type="submit" class="btn btn-warning">Remove</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

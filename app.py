@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt # type: ignore
 from flask_login import LoginManager, login_user, logout_user, UserMixin,login_required, current_user # type: ignore
@@ -31,6 +31,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)  # Domyślnie użytkownicy nie są administratorami
+    phone = db.Column(db.String(15), nullable=True)
 
     # Flask-Login properties
     @property
@@ -60,6 +61,13 @@ class Booking(db.Model):
 
     # Relacja z tabelą Flight
     flight = db.relationship('Flight', backref='bookings', lazy=True)
+
+
+class Favorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    flight_id = db.Column(db.Integer, db.ForeignKey('flight.id'), nullable=False)
+    flight = db.relationship('Flight')
 
 
 @app.route("/add_sample_flights_sql")
@@ -115,7 +123,11 @@ def index():
         # Wyświetlanie wszystkich lotów domyślnie
         flights = Flight.query.all()
 
-    return render_template("index.html", flights=flights)
+    favorite_ids = []
+    if current_user.is_authenticated:
+        favorite_ids = [fav.flight_id for fav in Favorite.query.filter_by(user_id=current_user.id).all()]
+
+    return render_template("index.html", flights=flights, favorite_ids=favorite_ids)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -391,6 +403,97 @@ def admin_reports():
 def my_bookings():
     bookings = Booking.query.filter_by(user_id=current_user.id).all()
     return render_template("my_bookings.html", bookings=bookings)
+
+
+@app.route("/download_bookings")
+@login_required
+def download_bookings():
+    import csv
+    from io import StringIO
+
+    bookings = Booking.query.filter_by(user_id=current_user.id).all()
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Departure", "Arrival", "Date", "Passengers", "Status"])
+    for b in bookings:
+        writer.writerow([
+            b.flight.departure_city,
+            b.flight.arrival_city,
+            b.flight.date,
+            b.number_of_passengers,
+            b.status,
+        ])
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=bookings.csv"},
+    )
+
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    if request.method == "POST":
+        current_user.username = request.form.get("username")
+        current_user.email = request.form.get("email")
+        current_user.phone = request.form.get("phone")
+        db.session.commit()
+        return redirect(url_for("profile"))
+    return render_template("profile.html")
+
+
+@app.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        current_password = request.form.get("current_password")
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+        if not bcrypt.check_password_hash(current_user.password, current_password):
+            return "Current password incorrect"
+        if new_password != confirm_password:
+            return "Passwords do not match"
+        current_user.password = bcrypt.generate_password_hash(new_password).decode("utf-8")
+        db.session.commit()
+        return redirect(url_for("profile"))
+    return render_template("change_password.html")
+
+
+@app.route("/toggle_favorite/<int:flight_id>", methods=["POST"])
+@login_required
+def toggle_favorite(flight_id):
+    favorite = Favorite.query.filter_by(user_id=current_user.id, flight_id=flight_id).first()
+    if favorite:
+        db.session.delete(favorite)
+    else:
+        db.session.add(Favorite(user_id=current_user.id, flight_id=flight_id))
+    db.session.commit()
+    return redirect(request.referrer or url_for("index"))
+
+
+@app.route("/favorites")
+@login_required
+def favorites():
+    favs = Favorite.query.filter_by(user_id=current_user.id).all()
+    flights = [f.flight for f in favs]
+    return render_template("favorites.html", flights=flights)
+
+
+@app.route("/api/flights")
+def api_flights():
+    flights = Flight.query.all()
+    return jsonify([
+        {
+            "id": f.id,
+            "departure_city": f.departure_city,
+            "arrival_city": f.arrival_city,
+            "date": f.date,
+            "price": f.price,
+            "available_seats": f.available_seats,
+        }
+        for f in flights
+    ])
 
 if __name__ == "__main__":
     app.run(debug=True)

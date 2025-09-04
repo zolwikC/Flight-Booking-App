@@ -56,6 +56,15 @@
             <td>{{ flight.available_seats }}</td>
             <td>
                 <a href="{{ url_for('book_flight', flight_id=flight.id) }}" class="btn btn-success">Book</a>
+                {% if current_user.is_authenticated %}
+                <form method="post" action="{{ url_for('toggle_favorite', flight_id=flight.id) }}" style="display:inline;">
+                    {% if flight.id in favorite_ids %}
+                    <button type="submit" class="btn btn-warning">Unfavorite</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-warning">Favorite</button>
+                    {% endif %}
+                </form>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
